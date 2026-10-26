@@ -1,0 +1,13 @@
+{
+  "loader": "Build/portrait-build.loader.js",
+  "dataUrl": "Build/portrait-build.data.unityweb",
+  "frameworkUrl": "Build/portrait-build.framework.js.unityweb",
+  "codeUrl": "Build/portrait-build.wasm.unityweb",
+  "companyName": "Farmers Bazooka",
+  "productName": "Farmers Bazooka Homeward",
+  "productVersion": "portrait-20261025-r110-wind-gate",
+  "streamingAssetsUrl": "StreamingAssets",
+  "autoSyncPersistentDataPath": true,
+  "version": "portrait-20261025-r110-wind-gate",
+  "buildId": "2026-10-25T12:07:13.7635990Z"
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<!-- Farmers Bazooka, GameBull web build (portrait). This page is the host-facing shell:
+     - the loading page (Unity IdeofuzionBridge template behaviour, playbook section 7): baked blurred key art,
+       spinner, tenant icon from /context (gameLogoUrl, then gameBannerUrl) with the 4 s / 30 s clocks;
+     - a frame filling the whole page (full width and height, safe areas excepted; no fixed size or scale, as the
+       newest web ports do) that runs the game (app.html, the client's portrait page) with the same launch URL. -->
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Farmers Bazooka | スコアチャレンジ</title>
+<link rel="icon" type="image/png" href="./gb/favicon-D1bdmw-4.png">
+  <script type="module" crossorigin src="./gb/index-CzfJwNb4.js"></script>
+  <link rel="modulepreload" crossorigin href="./gb/nozoom-MvOGmx9I.js">
+  <link rel="stylesheet" crossorigin href="./gb/index-HDgqGSa3.css">
+</head>
+<body>
+<iframe id="gb-frame" title="Farmers Bazooka" allow="autoplay; fullscreen; clipboard-write"></iframe>
+<div id="gb-loading">
+  <div id="unity-loading-bar">
+    <div id="unity-logo"><div id="gb-tenant-logo"></div><div id="gb-spinner"></div></div>
+    <div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div>
+    <div id="unity-progress-percent">0%</div>
+  </div>
+</div>
+</body>
+</html>
