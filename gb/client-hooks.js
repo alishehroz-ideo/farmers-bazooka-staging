@@ -37,12 +37,32 @@
   const __fbPause = pause;
   pause = function (value) { if (inRun || held) return; return __fbPause(value); };
 
+  // Their render size: their boot() sends SetVisualViewport (their visualViewport()) once, as soon as
+  // createUnityInstance resolves, and after that only when the canvas changes size. On a slower phone (iPhone) their
+  // FarmRun is not loaded yet at that moment, the message is dropped, and Unity keeps the canvas default 300x150
+  // stretched over the whole screen (blurred, squeezed sideways). Their own visualViewport() is sent again whenever
+  // the canvas buffer is not the size it asks for (their ratio, their Unity clamp in FarmVisualQuality.cs).
+  let fitAt = 0, fits = 0;
+  function fitRender(why) {
+    const c = el('game'), b = c.getBoundingClientRect();
+    if (!game || !b.width || !b.height) return;
+    const ratio = visualQuality === 'low' ? 1 : Math.min(Math.max(devicePixelRatio, 1.25), 1.5);
+    const w = Math.min(1000, Math.max(200, Math.round(b.width * ratio))), h = Math.min(1800, Math.max(300, Math.round(b.height * ratio)));
+    if (c.width === w && c.height === h) return;
+    const now = performance.now();
+    if (now - fitAt < 1000) return;
+    fitAt = now;
+    if (fits++ < 5) console.log(`[FB-GB] Render size ${c.width}x${c.height}, their page asks ${w}x${h} (${why}): their visualViewport() sent again.`);
+    visualViewport();
+  }
+
   // Their state callback (10 times a second from their Unity build): after their own HUD update, keep their
-  // menus closed, and watch the Score Challenge target / time limit.
+  // menus closed, keep their render size, and watch the Score Challenge target / time limit.
   const __fbState = window.onFarmersPortraitState;
   window.onFarmersPortraitState = s => {
     __fbState(s);
     last = s;
+    if (s.ready) fitRender('state');
     hideTheirMenus(!inRun && !ended);
     if (!inRun || held || locked || ended || !s.running) return;
     if (target > 0 && !s.finishing && s.score >= target) {
@@ -123,6 +143,7 @@
       el('pause').style.visibility = 'hidden';
       // Held for the challenge intro: paused in the same tick, before their Unity build runs a frame.
       if (held) send('SetPaused', 1);
+      fitAt = 0; fitRender('run start');
       const s = last;
       console.log(`[FB-GB] Client START: their run on a random course${held ? ' (held for the intro)' : ''}${target ? `, target ${target}` : ''}${limitS ? `, limit ${limitS} s` : ''}.`);
       return s;
