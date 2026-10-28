@@ -40,21 +40,28 @@
   // Their render size: their boot() sends SetVisualViewport (their visualViewport()) once, as soon as
   // createUnityInstance resolves, and after that only when the canvas changes size. On a slower phone (iPhone) their
   // FarmRun is not loaded yet at that moment, the message is dropped, and Unity keeps the canvas default 300x150
-  // stretched over the whole screen (blurred, squeezed sideways). Their own visualViewport() is sent again whenever
-  // the canvas buffer is not the size it asks for (their ratio, their Unity clamp in FarmVisualQuality.cs).
+  // stretched over the whole screen (blurred, stretched top to bottom). Whenever the canvas buffer is not the size
+  // their page asks for (their ratio, their Unity clamp in FarmVisualQuality.cs), the buffer is set to that size
+  // (their build runs with matchWebGLToCanvasSize=false, so Unity draws at whatever size the canvas has) and their
+  // own visualViewport() is sent again so Unity's Screen size agrees.
   let fitAt = 0, fits = 0;
+  // Layout size (clientWidth/Height), not the box on screen: their crash jolt (canvas.impact-hit) scales the canvas
+  // for 0.38 s. Only a clear miss (over 3%) is put right, so a rounding pixel never fights their own size.
   function fitRender(why) {
-    const c = el('game'), b = c.getBoundingClientRect();
-    if (!game || !b.width || !b.height) return;
+    const c = el('game');
+    if (!game || !c.clientWidth || !c.clientHeight) return;
     const ratio = visualQuality === 'low' ? 1 : Math.min(Math.max(devicePixelRatio, 1.25), 1.5);
-    const w = Math.min(1000, Math.max(200, Math.round(b.width * ratio))), h = Math.min(1800, Math.max(300, Math.round(b.height * ratio)));
-    if (c.width === w && c.height === h) return;
+    const w = Math.min(1000, Math.max(200, Math.round(c.clientWidth * ratio))), h = Math.min(1800, Math.max(300, Math.round(c.clientHeight * ratio)));
+    if (Math.abs(c.width - w) <= w * 0.03 && Math.abs(c.height - h) <= h * 0.03) return;
+    if (fits++ < 5) console.log(`[FB-GB] Render size ${c.width}x${c.height}, their page asks ${w}x${h} (${why}): set, and their visualViewport() sent again.`);
+    c.width = w; c.height = h;
     const now = performance.now();
     if (now - fitAt < 1000) return;
     fitAt = now;
-    if (fits++ < 5) console.log(`[FB-GB] Render size ${c.width}x${c.height}, their page asks ${w}x${h} (${why}): their visualViewport() sent again.`);
     visualViewport();
   }
+  // Also between their state updates (their state stops while their game is paused or not yet ready).
+  setInterval(() => fitRender('watch'), 500);
 
   // Their state callback (10 times a second from their Unity build): after their own HUD update, keep their
   // menus closed, keep their render size, and watch the Score Challenge target / time limit.
