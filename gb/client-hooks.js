@@ -146,6 +146,10 @@
       target = opts.target || 0; limitS = opts.limitSeconds || 0;
       inRun = true; held = !!opts.hold; locked = false; ended = false;
       closeTheirDialogs();
+      // A run the shell stopped (challenge target / time limit) is only paused in their Unity build, and their
+      // SelectStage ignores a running run (FarmStages.cs: if(running&&!ended)return), so their START would replay the
+      // same course. Their own ResetRun first, so their random pick of the 50 courses applies.
+      if (game && state && state.running && !state.ended) { send('ResetRun'); console.log('[FB-GB] Previous run was stopped by GameBull: their ResetRun before START.'); }
       el('start').onclick();
       el('pause').style.visibility = 'hidden';
       // Held for the challenge intro: paused in the same tick, before their Unity build runs a frame.
